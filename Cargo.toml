@@ -1,0 +1,10 @@
+[package]
+name = "rust-idcard"
+version = "0.1.0"
+authors = ["Su Yu <suyu@intermaker.cn>"]
+edition = "2018"
+license = "MIT"
+description = "Verifier for Chinese ID Card."
+repository = "https://github.com/suyuxp/rust-idcard"
+
+[dependencies]
