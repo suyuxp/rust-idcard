@@ -1,3 +1,4 @@
 /target
+/vendor
 **/*.rs.bk
 Cargo.lock
