@@ -36,5 +36,8 @@ mod tests {
         assert_eq!(super::validate("15040419840217262X"), true);
         assert_eq!(super::validate("15040419840217262x"), true);
         assert_eq!(super::validate("150404198402172620"), false);
+        assert_eq!(super::validate("150404198402"), false);
+        assert_eq!(super::validate("1"), false);
+        assert_eq!(super::validate(""), false);
     }
 }
