@@ -20,7 +20,7 @@ pub struct CodeNameResp {
     age: Option<String>,
 }
 
-pub fn validate_codename(idcard: &str, name: &str, appcode: &str) -> Result<CodeNameResp, Error> {
+fn validate_name(idcard: &str, name: &str, appcode: &str) -> Result<CodeNameResp, Error> {
     let url = "https://idenauthen.market.alicloudapi.com/idenAuthentication";
     let params = [("idNo", idcard), ("name", name)];
     let client = reqwest::Client::new();
@@ -34,7 +34,7 @@ pub fn validate_codename(idcard: &str, name: &str, appcode: &str) -> Result<Code
     Ok(res)
 }
 
-pub fn validate(idcard: &str) -> bool {
+fn validate_idcard(idcard: &str) -> bool {
     let weights = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
     let sum: u32 = idcard
         .chars()
@@ -64,33 +64,59 @@ pub fn validate(idcard: &str) -> bool {
     }
 }
 
+pub fn validate(idcard: &str, name: Option<&str>, appcode: Option<&str>) -> Result<bool, Error> {
+    match name {
+        Some(v) => match validate_name(idcard, v, appcode.unwrap_or("")) {
+            Ok(x) => Ok(x.resp_code == "0000"),
+            Err(ex) => Err(ex),
+        },
+
+        None => Ok(validate_idcard(idcard)),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     #[test]
     fn it_works() {
-        assert_eq!(super::validate("510108197205052137"), true);
-        assert_eq!(super::validate("15040419840217262X"), true);
-        assert_eq!(super::validate("15040419840217262x"), true);
-        assert_eq!(super::validate("150404198402172620"), false);
-        assert_eq!(super::validate("150404198402"), false);
-        assert_eq!(super::validate("1"), false);
-        assert_eq!(super::validate(""), false);
+        assert_eq!(
+            super::validate("510108197205052138", None, None).unwrap(),
+            false
+        );
 
         assert_eq!(
-            super::validate_codename(
+            super::validate(
+                "510108197205052137",
+                Some("苏渝"),
+                Some("e61152457c5d41f99d383868d97e328e")
+            )
+            .unwrap(),
+            true
+        );
+
+        assert_eq!(super::validate_idcard("510108197205052137"), true);
+        assert_eq!(super::validate_idcard("15040419840217262X"), true);
+        assert_eq!(super::validate_idcard("15040419840217262x"), true);
+        assert_eq!(super::validate_idcard("150404198402172620"), false);
+        assert_eq!(super::validate_idcard("150404198402"), false);
+        assert_eq!(super::validate_idcard("1"), false);
+        assert_eq!(super::validate_idcard(""), false);
+
+        assert_eq!(
+            super::validate_name(
                 "510108197205052137",
                 "苏渝",
-                "65827782610e49f8b9c9ec984b67f955"
+                "e61152457c5d41f99d383868d97e328e"
             )
             .unwrap()
             .resp_code,
             "0000"
         );
         assert_eq!(
-            super::validate_codename(
+            super::validate_name(
                 "510108197205052138",
                 "苏渝",
-                "65827782610e49f8b9c9ec984b67f955"
+                "e61152457c5d41f99d383868d97e328e"
             )
             .unwrap()
             .resp_code,
