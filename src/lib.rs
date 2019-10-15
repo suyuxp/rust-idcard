@@ -65,13 +65,17 @@ fn validate_idcard(idcard: &str) -> bool {
 }
 
 pub fn validate(idcard: &str, name: Option<&str>, appcode: Option<&str>) -> Result<bool, Error> {
-    match name {
-        Some(v) => match validate_name(idcard, v, appcode.unwrap_or("")) {
-            Ok(x) => Ok(x.resp_code == "0000"),
-            Err(ex) => Err(ex),
+    match validate_idcard(idcard) {
+        true => match name {
+            Some(v) => match validate_name(idcard, v, appcode.unwrap_or("")) {
+                Ok(x) => Ok(x.resp_code == "0000"),
+                Err(ex) => Err(ex),
+            },
+
+            None => Ok(true),
         },
 
-        None => Ok(validate_idcard(idcard)),
+        false => Ok(false),
     }
 }
 
@@ -81,6 +85,16 @@ mod tests {
     fn it_works() {
         assert_eq!(
             super::validate("510108197205052138", None, None).unwrap(),
+            false
+        );
+
+        assert_eq!(
+            super::validate(
+                "510108197205052137",
+                Some("无名氏"),
+                Some("e61152457c5d41f99d383868d97e328e")
+            )
+            .unwrap(),
             false
         );
 
